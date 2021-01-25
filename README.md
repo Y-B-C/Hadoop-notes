@@ -19,7 +19,7 @@
 		PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
 		export JAVA_HOME HADOOP_HOME PATH		(提升为全局变量)
 	（5）执行最新的文件（刷新）：source /etc/profile        使用jps查看
-
+	
 ==================================================================
 
 免密登录-------ssh.用户名@主机名      |        ssh.主机名(默认当前用户)
@@ -27,11 +27,13 @@
 2.将公钥拷贝到要免密登录的目标机器上:	ssh-copy-id hadoop1      |      ssh-copy-id 用户名@主机名 
 				ssh-copy-id hadoop2
 				ssh-copy-id hadoop3
+				
 ==================================================================
 
 集群分发脚本xsync（远程同步工具）
 1.在/home/用户名 目录下创建bin目录，并在bin目录下xsync创建文件
 	mkdir bin------cd bin/------touch xsync------vim xsync
+	
 -----------------------------------------------------------------
 #!/bin/bash
 #校验参数是否合法
@@ -52,6 +54,7 @@ do
         echo----------------hadoop$i---------------------
         rsync -rvlt $dirpath/$filename ybc@hadoop$i:$dirpath
 done						
+
 ==================================================================
 
 修改脚本 xsync 具有执行权限
@@ -64,6 +67,7 @@ done
 配置集群
 进入：		cd /opt/module/hadoop-2.7.2/etc/hadoop
 配置文件：	vim core-site.xml
+
 -------------------------------------------------------------------
 解说：在第一台机器启动NameNode
 <!-- 指定HDFS中NameNode的地址 -->
@@ -77,18 +81,22 @@ done
                 <name>hadoop.tmp.dir</name>
                 <value>/opt/module/hadoop-2.7.2/data/tmp</value>
 </property>
+
 ==================================================================
 配置文件：vim hdfs-site.xml
 解说：SecondaryNameNode在第三台机器运行
------------------------------------------------------------------------
+
+------------------------------------------------------------------
 <!-- 指定Hadoop辅助名称节点主机配置 -->
 <property>
       <name>dfs.namenode.secondary.http-address</name>
       <value>hadoop3:50090</value>
 </property>
+
 ==================================================================
 配置文件：vim yarn-site.xml
 解说：ResourceManager在第二台机器运行
+
 -----------------------------------------------------------------------
 <property>
                 <name>yarn.nodemanager.aux-services</name>
@@ -111,10 +119,12 @@ done
 <name>yarn.log-aggregation.retain-seconds</name>
 <value>604800</value>
 </property>
+
 ==================================================================
 去掉mapred-site.xml后面的template
 mv mapred-site.xml.template mapred-site.xml
 配置文件：vim mapred-site.xml
+
 ------------------------------------------------------------------------
 <property>
                 <name>mapreduce.framework.name</name>
@@ -139,10 +149,12 @@ xsync hadoop-2.7.2/
 加上：source /etc/profile
 分发到个个机器
 xsync .bashrc
+
 ==================================================================
 xcall----->表示批量执行命令          执行命令----->xcall 加要执行的命令
 在bin目录上编辑
 vim xcall
+
 -------------------------------------------------------------------------------------
 #!/bin/bash
 #在集群的所有机器上批量执行同一条命令
@@ -160,9 +172,11 @@ do
         echo-----------------------hadoop$i--------------------
         ssh hadoop$i $*
 done
+
 ----------------------------------------------------------------------------------------
 修改执行权限
 chmod u+x xcall
+
 -----------------------------------------------------------------------------------------
 配置群起群停的脚本（那台机器操作就在那台机器配置）
 cd /opt/module/hadoop-2.7.2/etc/hadoop
@@ -173,10 +187,12 @@ hadoop1
 hadoop2
 hadoop3
 注意：除了写主机名其它的空格之类的符号都不能有
+
 ------------------------------------------------------------------------------------------
 如果集群是第一次启动，需要在NN所配置的节点上进行格式化NameNode
 （当前配置在第一台机器，使用只能在第一台机器执行此命令）
 hadoop namenode -format
+
 ====================================备注===========================================
 分别启动/停止HDFS组件------>start(启动) stop(暂停)
 hadoop-daemon.sh  start namenode
@@ -186,6 +202,7 @@ hadoop-daemon.sh  start secondarynamenode
 启动/停止YARN
 yarn-daemon.sh start resourcemanager
 yarn-daemon.sh start nodemanager
+
 ---------------整体启动---------------------
 整体启动/停止HDFS---配置ssh是前提
 start-dfs.sh   /  stop-dfs.sh
@@ -195,6 +212,7 @@ start-yarn.sh  /  stop-yarn.sh
 
 全部启动/停止
 start-all.sh--------->包括YARN和HDFS
+
 =============================================================
 
 停止防火墙的命令：sudo service iptables stop/status(查看防火墙状态)
